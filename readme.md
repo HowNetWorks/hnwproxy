@@ -18,4 +18,5 @@ hnwProxy is an appliance you can insert between your browser and the Internet to
 ### Usage
 
 1. Install [Vagrant](https://www.vagrantup.com/downloads.html)
+2. Install a supported provider (currently [VirtualBox](https://www.virtualbox.org/) and Hyper-V)
 2. Download hnwProxy: `git clone https://github.com/HowNetWorks/hnwProxy`
