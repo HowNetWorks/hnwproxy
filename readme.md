@@ -17,4 +17,5 @@ hnwProxy is an appliance you can insert between your browser and the Internet to
 
 ### Usage
 
-todo
+1. Install [Vagrant](https://www.vagrantup.com/downloads.html)
+2. Download hnwProxy: `git clone https://github.com/HowNetWorks/hnwProxy`
