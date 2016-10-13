@@ -1,20 +1,43 @@
 ﻿# hnwProxy
 
-hnwProxy is an appliance you can insert between your browser and the Internet to simulate a poorly working network connection. It is being developed as a tool to help HowNetWorks' development, and is intended to be used as a proxy server either locally as a virtual machine or deployed to a cloud provider.
+hnwProxy is a proxy server you can use to simulate a broken Internet connection. It is being developed as a tool to help HowNetWorks' development.
 
-### Goals
+## Goals
  * codified to the max
    * configuration is not tied to a bulky virtual machine image
    * quick, easy deployment
  * deployable to VirtualBox, Hyper-V, and 1-2 cloud providers (tbd).
  * support a subset of HowNetWorks tests
  
-### Technology Stack
+## Supported tests
 
-1. Vagrant to deploy the the virtual machine.
-2. Ansible and shell scripts for its configuration. 
-3. Various scripts to systematically break the server
+ * none
+ 
+Todo:
+ * Broken MTU
+ * DNS Redirect (iptables DNAT maybe)
 
-### Usage
+## Usage
 
-todo
+1. Install [Vagrant](https://www.vagrantup.com/downloads.html)
+
+2. Install a supported virtualization provider ([VirtualBox](https://www.virtualbox.org/) or Hyper-V)
+
+3. Download hnwProxy: `git clone https://github.com/HowNetWorks/hnwProxy.git`
+
+4. Start hnwProxy: `vagrant up [--provider=hyperv]` (--provider might be necessary with windows/hyperv).
+
+5. Once hnwProxy is up, you can interact with it using standard vagrant commands:
+```
+# SSH in
+vagrant ssh
+
+# SSH -D
+vagrant ssh -- -D 6000
+
+# Shutdown the VM
+vagrant halt
+
+# Delete the VM
+vagrant destroy
+```
