@@ -1,4 +1,4 @@
---
+---
 - name: boilerplate playbook
   hosts: all
   sudo: true
