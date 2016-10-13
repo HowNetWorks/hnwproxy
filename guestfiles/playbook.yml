@@ -1,0 +1,7 @@
+--
+- name: boilerplate playbook
+  hosts: all
+  sudo: true
+  tasks:
+   - name: starting ansible run
+     shell: echo $(date) >> /tmp/ansible_run
