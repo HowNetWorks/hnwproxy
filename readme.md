@@ -11,10 +11,9 @@ hnwProxy is a proxy server you can use to simulate a broken Internet connection.
  
 ## Supported tests
 
- * none
+ * Broken MTU
  
 Todo:
- * Broken MTU
  * DNS Redirect (iptables DNAT maybe)
 
 ## Usage
@@ -27,17 +26,8 @@ Todo:
 
 4. Start hnwProxy: `vagrant up [--provider=hyperv]` (--provider might be necessary with windows/hyperv).
 
-5. Once hnwProxy is up, you can interact with it using standard vagrant commands:
-```
-# SSH in
-vagrant ssh
+5. Connect via SSH & create a SOCKS5 proxy `vagrant ssh -- -D 6000`
 
-# SSH -D
-vagrant ssh -- -D 6000
+6. Set your browser to proxy requests to localhost:6000.
 
-# Shutdown the VM
-vagrant halt
-
-# Delete the VM
-vagrant destroy
-```
+7. Use the command `proxy` to see what you can break in hnwProxy.
