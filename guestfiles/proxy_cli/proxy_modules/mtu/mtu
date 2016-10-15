@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# script to break mtu
+
+INTERFACE=eth0
+DEFAULT_MTU=1500
+
+if [ $# -eq 0 ]
+then
+  ip link set $INTERFACE mtu $DEFAULT_MTU
+  echo
+  echo "Set MTU to default value of $DEFAULT_MTU".
+  echo "Usage: proxy break mtu <value>"
+else
+  ip link set $INTERFACE mtu $1
+fi

@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+# script to run hnwProxy modules
+
+SCRIPTDIR=/usr/local/bin
+MODULEDIR=$SCRIPTDIR/proxy_modules
+
+usage()
+{
+  printf "Break something:\nproxy break <module>\n\nShow modules:\nproxy show\n\n"
+}
+
+if [ $# -eq 0 ]
+then
+  usage
+else
+  case $1 in
+    "break")
+      # run script to break module
+      sudo $MODULEDIR/$2/$2 $3 $4
+      ;;
+    "show")
+      printf "\nAvailable modules:\n\n"
+      cat $MODULEDIR/*/description
+      ;;
+    *)
+      usage
+      ;;
+    esac
+fi
