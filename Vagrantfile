@@ -6,12 +6,12 @@ Vagrant.configure("2") do |config|
   ##############################
   # PROVIDER SPECIFIC SETTINGS #
   ##############################
-  config.vm.provider "virtualbox" do |vb|
-    config.vm.box = "bento/ubuntu-14.04"
+  config.vm.provider "virtualbox" do |vb, override|
+    override.vm.box = "bento/ubuntu-14.04"
   end
   
-  config.vm.provider "hyperv" do | hyperv |
-	config.vm.box = "ericmann/trusty64"
+  config.vm.provider "hyperv" do |hyperv, override |
+	override.vm.box = "ericmann/trusty64"
   end
   
   ##############################
