@@ -8,10 +8,12 @@ Vagrant.configure("2") do |config|
   ##############################
   config.vm.provider "virtualbox" do |vb, override|
     override.vm.box = "bento/ubuntu-14.04"
+	override.vm.provision "shell", path: "scripts/provision_virtualbox.sh"
   end
   
   config.vm.provider "hyperv" do |hyperv, override |
 	override.vm.box = "ericmann/trusty64"
+	override.vm.provision "shell", path: "scripts/provision_hyperv.sh"
   end
   
   ##############################
@@ -30,7 +32,7 @@ Vagrant.configure("2") do |config|
   # upload guest files
   config.vm.provision "file", source: "guestfiles", destination: "/home/vagrant"
   
-  config.vm.provision "shell", path: "provision_all_platforms.sh"
+  config.vm.provision "shell", path: "scripts/provision_all_providers.sh"
   
   config.vm.provision "ansible_local" do |ansible|
 	ansible.playbook = "playbook.yml"

@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
 # script to break mtu
 
-INTERFACE=eth0
-DEFAULT_MTU=1500
+INTERFACE=$(cat /var/external_interface)
+CUR_MTU=$(ip link show $INTERFACE | sed -n '1p' | cut -d ' ' -f 5)
+echo $CUR_MTU >> /tmp/original_mtu
+ORIG_MTU=$(head -n 1 /tmp/original_mtu)
 
 if [ $# -eq 0 ]
 then
-  ip link set $INTERFACE mtu $DEFAULT_MTU
   echo
-  echo "Set MTU to default value of $DEFAULT_MTU".
+  echo "$INTERFACE default MTU: $ORIG_MTU"
+  echo "$INTERFACE current MTU: $CUR_MTU"
+  echo
   echo "Usage: proxy break mtu <value>"
+  echo
 else
   ip link set $INTERFACE mtu $1
 fi
