@@ -1,13 +1,21 @@
 #!/usr/bin/env bash
-
 # script to run hnwProxy modules
+
+set -e
 
 SCRIPTDIR=/usr/local/bin
 MODULEDIR=$SCRIPTDIR/proxy_modules
 
 usage()
 {
-  printf "Break something:\nproxy break <module>\n\nShow modules:\nproxy show\n\n"
+  echo
+  echo 'Run module:'
+  echo 'proxy module_name [options]'
+  echo '(run with no options for module info)'
+  echo
+  echo 'Show modules:'
+  echo 'proxy show'
+  echo
 }
 
 if [ $# -eq 0 ]
@@ -15,16 +23,18 @@ then
   usage
 else
   case $1 in
-    "break")
-      # run script to break module
-      sudo $MODULEDIR/$2/$2 $3 $4
-      ;;
     "show")
       printf "\nAvailable modules:\n\n"
       cat $MODULEDIR/*/description
       ;;
     *)
-      usage
+      if [ -f $MODULEDIR/$1/$1 ]
+      then
+        # run module with options
+        sudo $MODULEDIR/$1/$1 $2 $3 $4
+      else
+        usage
+        fi
       ;;
     esac
 fi

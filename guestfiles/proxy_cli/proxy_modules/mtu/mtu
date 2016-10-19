@@ -12,7 +12,7 @@ then
   echo "$INTERFACE default MTU: $ORIG_MTU"
   echo "$INTERFACE current MTU: $CUR_MTU"
   echo
-  echo "Usage: proxy break mtu <value>"
+  echo "Usage: proxy mtu [value]"
   echo
 else
   ip link set $INTERFACE mtu $1

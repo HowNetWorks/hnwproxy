@@ -1,7 +1,11 @@
 ---
-- name: boilerplate playbook
+- name: playbook (all providers)
   hosts: all
   sudo: true
   tasks:
    - name: starting ansible run
      shell: echo $(date) >> /tmp/ansible_run
+   - name: iptables
+     apt: name=iptables state=present
+   - name: flush iptables
+     shell: iptables -F && ip6tables -F

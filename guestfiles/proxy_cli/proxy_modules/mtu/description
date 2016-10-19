@@ -1,2 +1,2 @@
 mtu - break mtu
-usage: proxy break mtu <value>
+usage: proxy mtu [value]
