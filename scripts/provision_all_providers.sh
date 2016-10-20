@@ -6,7 +6,7 @@
 set -e
 
 # replace baked-in mirror with local one
-sed -i -E 's#https?:\/{2}[^ \t]+#mirror://mirrors.ubuntu.com/mirrors.txt#' /etc/apt/sources.list
+# sed -i -E 's#https?:\/{2}[^ \t]+#mirror://mirrors.ubuntu.com/mirrors.txt#' /etc/apt/sources.list
 
 apt-get -y update
 apt-get -y upgrade
