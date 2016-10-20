@@ -5,7 +5,15 @@
   tasks:
    - name: starting ansible run
      shell: echo $(date) >> /tmp/ansible_run
+
+   - name: remove ufw
+     apt: name=ufw state=absent purge=yes
+
    - name: iptables
      apt: name=iptables state=present
-   - name: flush iptables
-     shell: iptables -F && ip6tables -F
+
+   - name: iptables-persistent
+     apt: name=iptables-persistent state=present
+
+   - name: iptables base rules
+     script: /home/vagrant/guestfiles/firewall_base.sh
