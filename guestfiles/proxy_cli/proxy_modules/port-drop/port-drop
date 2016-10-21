@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# script to drop packets going to a port
+
+set -e
+
+# regex for iptables single port or range
+# not comprehensive, but good enough...
+SINGLEPORT='^[0-9]+$'
+PORTRANGE='^[0-9]+:[0-9]+$'
+
+# comment that identifies this module's iptables rules
+COMMENT="port-drop_module"
+
+usage()
+{
+  echo
+  echo "Usage:"
+  echo
+  echo "proxy port-drop [single|rangeStart:rangeEnd]"
+  echo "proxy port-drop [flush]"
+  echo "proxy port-drop [show]"
+  echo
+}
+
+if [[ $# -eq 0 ]]
+then
+  usage
+  
+elif [[ $1 = "show" ]]
+then
+  echo "Active rules:"
+  echo "IPv4"
+  iptables-save | grep $COMMENT | cut -d ' ' -f 4,8,14
+  echo "IPv6"
+  ip6tables-save | grep $COMMENT | cut -d ' ' -f 4,8,14
+  echo
+
+elif [[ $1  = "flush" ]]
+then
+  # remove this module's rules
+  iptables-save | grep -v $COMMENT | iptables-restore
+  ip6tables-save | grep -v $COMMENT | ip6tables-restore
+
+elif [[ $1 =~ $SINGLE_PORT ]]
+then
+    # create single port  rule
+    iptables -A OUTPUT -p tcp --dport $1 -m comment --comment "$COMMENT" -j DROP
+    iptables -A OUTPUT -p udp --dport $1 -m comment --comment "$COMMENT" -j DROP
+    ip6tables -A OUTPUT -p tcp --dport $1 -m comment --comment "$COMMENT" -j DROP
+    ip6tables -A OUTPUT -p udp --dport $1 -m comment --comment "$COMMENT" -j DROP
+
+elif [[ $1 =~ $PORT_RANGE ]]
+then
+    # create port range rule
+    iptables -A OUTPUT -p tcp -m multiport --dports $1 -m comment --comment "$COMMENT" -j DROP
+    iptables -A OUTPUT -p udp -m multiport --dports $1 -m comment --comment "$COMMENT" -j DROP
+    ip6tables -A OUTPUT -p tcp -m multiport --dports $1 -m comment --comment "$COMMENT" -j DROP
+    ip6tables -A OUTPUT -p udp -m multiport --dports $1 -m comment --comment "$COMMENT" -j DROP
+
+else
+  usage
+fi

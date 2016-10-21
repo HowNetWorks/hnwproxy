@@ -26,6 +26,7 @@ else
     "show")
       printf "\nAvailable modules:\n\n"
       cat $MODULEDIR/*/description
+      echo
       ;;
     *)
       if [ -f $MODULEDIR/$1/$1 ]
