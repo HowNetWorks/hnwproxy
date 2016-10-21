@@ -8,14 +8,13 @@ MODULEDIR=$SCRIPTDIR/proxy_modules
 
 usage()
 {
+  echo "USAGE"
+  echo "  proxy <module_name> [options]"
+  echo "  proxy <show>"
   echo
-  echo 'Run module:'
-  echo 'proxy module_name [options]'
-  echo '(run with no options for module info)'
-  echo
-  echo 'Show modules:'
-  echo 'proxy show'
-  echo
+  echo "OPTIONS"
+  echo "  module_name   Run this module."
+  echo "  show          List available modules."
 }
 
 if [ $# -eq 0 ]
@@ -26,7 +25,6 @@ else
     "show")
       printf "\nAvailable modules:\n\n"
       cat $MODULEDIR/*/description
-      echo
       ;;
     *)
       if [ -f $MODULEDIR/$1/$1 ]

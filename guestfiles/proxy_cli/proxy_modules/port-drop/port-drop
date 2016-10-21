@@ -13,13 +13,16 @@ COMMENT="port-drop_module"
 
 usage()
 {
+  echo "USAGE"
+  echo "  proxy port-drop <single|rangeStart:rangeEnd>"
+  echo "  proxy port-drop <flush>"
+  echo "  proxy port-drop <show>"
   echo
-  echo "Usage:"
-  echo
-  echo "proxy port-drop [single|rangeStart:rangeEnd]"
-  echo "proxy port-drop [flush]"
-  echo "proxy port-drop [show]"
-  echo
+  echo "OPTIONS"
+  echo "  single                A single port. E.g. 8080"
+  echo "  rangeStart:rangeEnd   A range of ports. E.g. 560:570"
+  echo "  flush                 Flush active rules."
+  echo "  show                  Show active rules."
 }
 
 if [[ $# -eq 0 ]]

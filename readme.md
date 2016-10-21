@@ -12,9 +12,12 @@ hnwProxy is a proxy server you can use to simulate a broken Internet connection.
 ## Supported tests
 
  * Broken MTU
+ * Port block (silently drop)
  
 Todo:
+ * Port block (tcp rst & icmp unreachable)
  * DNS Redirect (iptables DNAT maybe)
+ 
 
 ## Usage
 
@@ -31,3 +34,43 @@ Todo:
 6. Set your browser to proxy requests to localhost:6000.
 
 7. Use the command `proxy` to see what you can break in hnwProxy.
+```
+vagrant@hnwproxy:~$ proxy
+USAGE
+  proxy <module_name> [options]
+  proxy <show>
+
+OPTIONS
+  module_name   Run this module.
+  show          List available modules.
+vagrant@hnwproxy:~$ proxy show
+
+Available modules:
+
+ mtu - break mtu
+ usage: proxy mtu [value]
+
+ port-drop - silently drop packets going to a port
+ usage: proxy port-drop <single|rangeStart:rangeEnd>
+
+vagrant@hnwproxy:~$ proxy port-drop
+USAGE
+  proxy port-drop <single|rangeStart:rangeEnd>
+  proxy port-drop <flush>
+  proxy port-drop <show>
+
+OPTIONS
+  single                A single port. E.g. 8080
+  rangeStart:rangeEnd   A range of ports. E.g. 560:570
+  flush                 Flush active rules.
+  show                  Show active rules.
+vagrant@hnwproxy:~$ proxy port-drop 560:570
+vagrant@hnwproxy:~$ proxy port-drop show
+Active rules:
+IPv4
+tcp 560:570 DROP
+udp 560:570 DROP
+IPv6
+tcp 560:570 DROP
+udp 560:570 DROP
+```
