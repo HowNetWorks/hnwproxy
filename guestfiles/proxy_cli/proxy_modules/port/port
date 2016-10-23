@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# script to block ports using various methods
+
+set -e
+
+# regex for iptables single port or range
+# not comprehensive, but good enough...
+SINGLE_PORT='^[0-9]+$'
+PORT_RANGE='^[0-9]+:[0-9]+$'
+
+# comment that identifies this module's iptables rules
+COMMENT="port_module"
+
+usage()
+{
+  echo "hnwProxy port module. Filters traffic by outgoing destination port."
+  echo
+  echo "USAGE"
+  echo "  proxy port <single|rangeStart:rangeEnd> <action>"
+  echo "  proxy port flush"
+  echo "  proxy port show"
+  echo
+  echo "ARGUMENTS"
+  echo "  single                A single port. E.g. 8080"
+  echo "  rangeStart:rangeEnd   A range of ports. E.g. 560:570"
+  echo "  action                Action to take."
+  echo "                         - drop   drop packet"
+  echo "                         - rst    drop and send TCP RST"
+  echo "OPTIONS"
+  echo "  flush                 Flush active rules."
+  echo "  show                  Show active rules."
+}
+
+case $1 in
+  "")
+    usage
+    ;;
+
+  "show")
+    echo "Active rules:"
+    echo "  IPv4"
+    iptables-save | grep $COMMENT | cut -d ' ' -f 4,8,14,15,16 | sed -e 's/^/    /'
+    echo "  IPv6"
+    ip6tables-save | grep $COMMENT | cut -d ' ' -f 4,8,14,15,16 | sed -e 's/^/    /'
+    ;;
+
+  "flush")
+    # remove this module's rules
+    iptables-save | grep -v $COMMENT | iptables-restore
+    ip6tables-save | grep -v $COMMENT | ip6tables-restore
+    ;;
+
+  *)
+    if [[ $# -lt 2 ]]; then
+      echo "Invalid option or missing action."
+      exit 1
+
+    elif [[ $2 == "drop" ]]; then
+      if [[ $1 =~ $SINGLE_PORT ]]; then
+        # create single port  rule
+        iptables -A OUTPUT -p tcp --dport $1 -m comment --comment "$COMMENT" -j DROP
+        iptables -A OUTPUT -p udp --dport $1 -m comment --comment "$COMMENT" -j DROP
+        ip6tables -A OUTPUT -p tcp --dport $1 -m comment --comment "$COMMENT" -j DROP
+        ip6tables -A OUTPUT -p udp --dport $1 -m comment --comment "$COMMENT" -j DROP
+        
+      elif [[ $1 =~ $PORT_RANGE ]]; then
+        # create port range rule
+        iptables -A OUTPUT -p tcp -m multiport --dports $1 -m comment --comment "$COMMENT" -j DROP
+        iptables -A OUTPUT -p udp -m multiport --dports $1 -m comment --comment "$COMMENT" -j DROP
+        ip6tables -A OUTPUT -p tcp -m multiport --dports $1 -m comment --comment "$COMMENT" -j DROP
+        ip6tables -A OUTPUT -p udp -m multiport --dports $1 -m comment --comment "$COMMENT" -j DROP
+
+      else
+        echo "Invalid port or port range."
+        exit 1
+      fi
+    
+    elif [[ $2 == "rst" ]]
+    then
+      if [[ $1 =~ $SINGLE_PORT ]]; then
+        iptables -A OUTPUT -p tcp --dport $1 -m comment --comment "$COMMENT" -j REJECT --reject-with tcp-reset
+        ip6tables -A OUTPUT -p tcp --dport $1 -m comment --comment "$COMMENT" -j REJECT --reject-with tcp-reset
+        
+      elif [[ $1 =~ $PORT_RANGE ]]; then
+        iptables -A OUTPUT -p tcp -m multiport --dports $1 -m comment --comment "$COMMENT" -j REJECT --reject-with tcp-reset
+        ip6tables -A OUTPUT -p tcp -m multiport --dports $1 -m comment --comment "$COMMENT" -j REJECT --reject-with tcp-reset
+      else
+        echo "Invalid port or port range."
+        exit 1
+      fi
+    fi
+    ;;
+esac
