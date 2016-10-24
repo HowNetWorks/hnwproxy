@@ -9,15 +9,12 @@ hnwProxy is a proxy server you can use to simulate a broken Internet connection.
  * deployable to VirtualBox, Hyper-V, and 1-2 cloud providers (tbd).
  * support a subset of HowNetWorks tests
  
-## Supported tests
+## Features
+You can break things with hnwProxy using modules.The command `proxy show` will list available modules, all of these can be called without arguments for usage information. 
 
  * Broken MTU
- * Port block (silently drop)
- 
-Todo:
- * Port block (tcp rst & icmp unreachable)
- * DNS Redirect (iptables DNAT maybe)
- 
+ * Port block (drop & tcp rst)
+ * DNS redirect
 
 ## Usage
 
@@ -35,42 +32,32 @@ Todo:
 
 7. Use the command `proxy` to see what you can break in hnwProxy.
 ```
+PS D:\git\hnwProxy> vagrant ssh -- -D 6000
+
 vagrant@hnwproxy:~$ proxy
 USAGE
   proxy <module_name> [options]
-  proxy <show>
+  proxy show
 
 OPTIONS
   module_name   Run this module.
   show          List available modules.
-vagrant@hnwproxy:~$ proxy show
+vagrant@hnwproxy:~$ proxy  show
 
-Available modules:
+ dns-redirect - Redirect DNS requests to another server.
+ Usage: proxy dns-redirect <ip>
 
  mtu - break mtu
  usage: proxy mtu [value]
 
- port-drop - silently drop packets going to a port
- usage: proxy port-drop <single|rangeStart:rangeEnd>
+ port - Filters traffic by outgoing destination port.
+ Run without arguments for usage information.
 
-vagrant@hnwproxy:~$ proxy port-drop
-USAGE
-  proxy port-drop <single|rangeStart:rangeEnd>
-  proxy port-drop <flush>
-  proxy port-drop <show>
-
-OPTIONS
-  single                A single port. E.g. 8080
-  rangeStart:rangeEnd   A range of ports. E.g. 560:570
-  flush                 Flush active rules.
-  show                  Show active rules.
-vagrant@hnwproxy:~$ proxy port-drop 560:570
-vagrant@hnwproxy:~$ proxy port-drop show
-Active rules:
-IPv4
-tcp 560:570 DROP
-udp 560:570 DROP
-IPv6
-tcp 560:570 DROP
-udp 560:570 DROP
+vagrant@hnwproxy:~$ proxy dns-redirect 127.0.0.1
+vagrant@hnwproxy:~$ proxy dns-redirect ::0
+vagrant@hnwproxy:~$ proxy dns-redirect show
+Redirecting IPv4 DNS requests to 127.0.0.1
+Redirecting IPv6 DNS requests to ::
+vagrant@hnwproxy:~$ ping google.com
+ping: unknown host google.com
 ```

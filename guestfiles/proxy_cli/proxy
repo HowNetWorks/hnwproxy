@@ -10,7 +10,7 @@ usage()
 {
   echo "USAGE"
   echo "  proxy <module_name> [options]"
-  echo "  proxy <show>"
+  echo "  proxy show"
   echo
   echo "OPTIONS"
   echo "  module_name   Run this module."
@@ -23,7 +23,7 @@ then
 else
   case $1 in
     "show")
-      printf "\nAvailable modules:\n\n"
+      echo
       cat $MODULEDIR/*/description
       ;;
     *)

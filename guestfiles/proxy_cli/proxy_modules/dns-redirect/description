@@ -1,0 +1,3 @@
+ dns-redirect - Redirect DNS requests to another server.
+ Usage: proxy dns-redirect <ip>
+
