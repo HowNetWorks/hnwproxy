@@ -9,7 +9,8 @@ set -e
 sed -i -E 's#https?:\/{2}[^ \t]+#mirror://mirrors.ubuntu.com/mirrors.txt#' /etc/apt/sources.list
 
 apt-get -y update
-apt-get -y upgrade
+apt-get -y --force-yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade
+# ^ don't prompt to replace configuration files
 
 # install proxy cli from uploaded guest files
 cd /home/vagrant/guestfiles/proxy_cli
