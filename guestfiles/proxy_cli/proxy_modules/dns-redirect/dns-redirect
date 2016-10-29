@@ -37,17 +37,17 @@ case $1 in
     if [[ $ipv4_rule != "" ]]; then
       address=$(echo $ipv4_rule | grep -o '[^ \t]*$')
       # ^ select last space/tab delimited field from $ipv4_rule
-      echo "Redirecting IPv4 DNS requests to $address"
+      echo "Redirecting IPv4 DNS queries to $address"
     fi
     
     if [[ $ipv6_rule != "" ]]; then
       address=$(echo $ipv6_rule | grep -o '[^ \t]*$')
-      echo "Redirecting IPv6 DNS requests to $address"  
+      echo "Redirecting IPv6 DNS queries to $address"  
     fi
     ;;
 
   "disable")
-    # remove this module's rules
+    # remove this module's rules from iptables
     iptables-save | grep -v $COMMENT | iptables-restore
     ip6tables-save | grep -v $COMMENT | ip6tables-restore
     ;;
@@ -56,9 +56,14 @@ case $1 in
     if [[ $1 == *.* ]]; then
       # address cannot be IPv6 since it contains a dot
       # no need for further validation, iptables can do that
+      
+      # remove existing ipv4 rule
+      iptables-save | grep -v $COMMENT | iptables-restore
+      
       iptables -t nat -A OUTPUT -p udp --dport 53 -m comment --comment "$COMMENT" -j DNAT --to-destination $1
       iptables -t nat -A OUTPUT -p tcp --dport 53 -m comment --comment "$COMMENT" -j DNAT --to-destination $1
     else
+      ip6tables-save | grep -v $COMMENT | ip6tables-restore
       ip6tables -t nat -A OUTPUT -p udp --dport 53 -m comment --comment "$COMMENT" -j DNAT --to-destination $1
       ip6tables -t nat -A OUTPUT -p tcp --dport 53 -m comment --comment "$COMMENT" -j DNAT --to-destination $1
     fi
