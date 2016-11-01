@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# script to redirect dns lookups
+# transparent proxy module
+# uses iptables+mitmproxy
 
 set -e
 
@@ -23,6 +24,7 @@ disable()
   iptables-save | grep -v $COMMENT | iptables-restore
   ip6tables-save | grep -v $COMMENT | ip6tables-restore
 }
+
 case $1 in
   "")
     usage

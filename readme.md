@@ -15,6 +15,7 @@ You can break things with hnwProxy using modules.The command `proxy show` will l
  * Broken MTU
  * Port block (drop & tcp rst)
  * DNS redirect
+ * Transparent proxy (http & https)
 
 ## Usage
 
