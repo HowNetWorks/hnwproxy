@@ -13,10 +13,14 @@ apt-get -y --force-yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="
 # ^ don't prompt to replace configuration files
 
 # install proxy cli from uploaded guest files
+INSTALL_DIR="/usr/local/bin"
 cd /home/vagrant/guestfiles/proxy_cli
-cp -rf proxy /usr/local/bin
-cp -rf proxy_modules /usr/local/bin
-cd /usr/local/bin
-chown -R root:root proxy*
+cp -rf proxy $INSTALL_DIR
+cp -rf proxy_modules $INSTALL_DIR
+cd $INSTALL_DIR
+chown -R root:root proxy
+chown -R root:root proxy_modules
 chmod 775 -R proxy_modules
 chmod 2775 proxy
+$INSTALL_DIR/proxy_modules/*/setup
+# ^ run module setup scripts

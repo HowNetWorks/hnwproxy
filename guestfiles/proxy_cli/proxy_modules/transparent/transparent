@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# script to redirect dns lookups
+
+set -e
+
+# comment that identifies this module's iptables rules
+COMMENT="transparent_proxy_module"
+
+usage()
+{
+  echo "USAGE"
+  echo "  proxy transparent enable"
+  echo "  proxy transparent http"
+  echo "  proxy transparent https "
+  echo
+  echo "OPTIONS"
+  echo "  enable           Start transparent proxy for http & https"
+  echo "  http(s)          Start transparent proxy for http or https only"
+}
+
+disable()
+{  # remove this module's firewall rules
+  iptables-save | grep -v $COMMENT | iptables-restore
+  ip6tables-save | grep -v $COMMENT | ip6tables-restore
+}
+case $1 in
+  "")
+    usage
+    ;;
+
+  "enable")
+    # redirect http+s to localhost:8080
+    # only matches packets created by vagrant ssh user
+    iptables -t nat -A OUTPUT -p tcp -m multiport --dports 80,443 -m owner --uid-owner vagrant -m comment --comment "$COMMENT" -j REDIRECT --to-port 8080
+    ip6tables -t nat -A OUTPUT -p tcp -m multiport --dports 80,443 -m owner --uid-owner vagrant -m comment --comment "$COMMENT" -j REDIRECT --to-port 8080
+    echo "-> Starting transparent proxy"
+    echo "-> Press ENTER to begin, CTRL+C to exit. "
+    echo "-> Browse to mitm.it to install proxy CA cert."
+    read
+    # start mitmproxy
+    mitmproxy -T --host || disable
+    ;;
+  
+  "http")
+    iptables -t nat -A OUTPUT -p tcp --dport 80 -m owner --uid-owner vagrant -m comment --comment "$COMMENT" -j REDIRECT --to-port 8080
+    ip6tables -t nat -A OUTPUT -p tcp --dport 80 -m owner --uid-owner vagrant -m comment --comment "$COMMENT" -j REDIRECT --to-port 8080
+    echo "-> Starting transparent proxy for http."
+    echo "-> Press ENTER to begin, CTRL+C to exit."
+    read
+    mitmproxy -T --host || disable
+    ;;
+    
+  "https")
+    iptables -t nat -A OUTPUT -p tcp --dport 443 -m owner --uid-owner vagrant -m comment --comment "$COMMENT" -j REDIRECT --to-port 8080
+    ip6tables -t nat -A OUTPUT -p tcp --dport 443 -m owner --uid-owner vagrant -m comment --comment "$COMMENT" -j REDIRECT --to-port 8080
+    echo "-> Starting transparent proxy for https."
+    echo "-> Press ENTER to begin, CTRL+C to exit."
+    echo "-> Browse to mitm.it to install proxy CA cert."
+    read
+    mitmproxy -T --host || disable
+    ;;
+esac
+
+# clean up firewall rules
+disable
