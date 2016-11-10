@@ -22,5 +22,5 @@ chown -R root:root proxy
 chown -R root:root proxy_modules
 chmod 775 -R proxy_modules
 chmod 2775 proxy
-$INSTALL_DIR/proxy_modules/*/setup
+ls $INSTALL_DIR/proxy_modules/*/setup | bash
 # ^ run module setup scripts

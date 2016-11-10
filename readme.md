@@ -17,6 +17,23 @@ You can break things with hnwProxy using modules.The command `proxy show` will l
  * DNS redirect
  * Transparent proxy (http & https)
 
+## Providers
+hnwProxy supports 3 providers:
+
+### Virtualbox
+Run `vagrant up`
+
+### Hyper-V
+Run  `vagrant up` (include `--provider=hyperv` if vagrant doesn't recognize this automatically)
+
+### DigitalOcean
+1. Install DO plugin: `vagrant plugin install vagrant-digitalocean`
+2. Create API token: https://cloud.digitalocean.com/settings/api/tokens
+3. Add token to `settings.yaml`
+4. (optional) Change DO region in `settings.yaml`.
+5. `vagrant up --provider=digital_ocean`
+
+
 ## Usage
 
 1. Install [Vagrant](https://www.vagrantup.com/downloads.html)
@@ -25,13 +42,15 @@ You can break things with hnwProxy using modules.The command `proxy show` will l
 
 3. Download hnwProxy: `git clone https://github.com/HowNetWorks/hnwProxy.git`
 
-4. Start hnwProxy: `vagrant up [--provider=hyperv]` (--provider might be necessary with windows/hyperv).
+4. Start hnwProxy: see the provider section above ^^^.
 
 5. Connect via SSH & create a SOCKS5 proxy `vagrant ssh -- -D 6000`
 
 6. Set your browser to proxy requests to localhost:6000.
 
 7. Use the command `proxy` to see what you can break in hnwProxy.
+
+8. Rerun provisioning: `vagrant provision`, destroy VM: `vagrant destroy`
 ```
 PS D:\git\hnwProxy> vagrant ssh -- -D 6000
 
