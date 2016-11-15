@@ -8,3 +8,9 @@ DO:
   # https://github.com/devopsgroup-io/vagrant-digitalocean#configure
   token: 'your_token'
   keypath: '~/.ssh/id_rsa'
+  
+# Enable virtualbox bridged network.
+#  By default, virtualbox connects through the host using NAT.
+#  A bridged network is required for some modules, but is not the default
+#  in hnwProxy, because bridged networks don't work work reliably over wifi.
+vbox_bridged_network: false

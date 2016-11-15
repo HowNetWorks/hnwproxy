@@ -1,18 +1,23 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# user-configurable DO settings
+# Load user configurable settings
 require 'yaml'
 settings = YAML.load_file('settings.yaml')
 
 Vagrant.configure("2") do |config|
-
   ##############################
   # PROVIDER SPECIFIC SETTINGS #
   ##############################
   config.vm.provider "virtualbox" do |vb, override|
     override.vm.box = "bento/ubuntu-14.04"
     override.vm.provision "shell", path: "scripts/provision_virtualbox.sh"
+    
+    if settings['vbox_bridged_network'] == true
+      # The reasoning for this is described in settings.yaml
+      override.vm.network "public_network", use_dhcp_assigned_default_route: true
+      override.vm.provision "shell", inline: 'echo "eth1" > /var/external_interface'
+    end
   end
   
   config.vm.provider "hyperv" do |hyperv, override|
