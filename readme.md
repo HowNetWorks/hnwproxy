@@ -1,16 +1,9 @@
 ﻿# hnwProxy
 
 hnwProxy is a proxy server you can use to simulate a broken Internet connection. It is being developed as a tool to help HowNetWorks' development.
-
-## Goals
- * codified to the max
-   * configuration is not tied to a bulky virtual machine image
-   * quick, easy deployment
- * deployable to VirtualBox, Hyper-V, and 1-2 cloud providers (tbd).
- * support a subset of HowNetWorks tests
  
 ## Features
-You can break things with hnwProxy using modules.The command `proxy show` will list available modules, all of these can be called without arguments for usage information. 
+hnwProxy uses a simple module system to run scripts that break things. The command `proxy show` will list available modules, all of these can be called without arguments for usage information. (more info about modules under guestfiles/proxy_cli)  
 
  * Broken MTU
  * Port block (drop & tcp rst)
@@ -21,10 +14,14 @@ You can break things with hnwProxy using modules.The command `proxy show` will l
 hnwProxy supports 3 providers:
 
 ### Virtualbox
-Run `vagrant up`
+
+1. (optional) Enable bridged networking in `settings.yaml`if you have a wired NIC available.
+2. Run `vagrant up`
 
 ### Hyper-V
-Run  `vagrant up` (include `--provider=hyperv` if vagrant doesn't recognize this automatically)
+
+1. Ensure you have one `external` type external switch configured in Hyper-V. 
+2. Run  `vagrant up` (include `--provider=hyperv` if vagrant doesn't recognize this automatically)
 
 ### DigitalOcean
 1. Install DO plugin: `vagrant plugin install vagrant-digitalocean`
@@ -38,19 +35,24 @@ Run  `vagrant up` (include `--provider=hyperv` if vagrant doesn't recognize this
 
 1. Install [Vagrant](https://www.vagrantup.com/downloads.html)
 
-2. Install a supported virtualization provider ([VirtualBox](https://www.virtualbox.org/) or Hyper-V)
+2. Download hnwProxy: `git clone https://github.com/HowNetWorks/hnwProxy.git`
 
-3. Download hnwProxy: `git clone https://github.com/HowNetWorks/hnwProxy.git`
+3. Start hnwProxy using one of the providers above ^.
 
-4. Start hnwProxy: see the provider section above ^^^.
+4. Connect via SSH & create a SOCKS5 proxy `vagrant ssh -- -D 6000`
 
-5. Connect via SSH & create a SOCKS5 proxy `vagrant ssh -- -D 6000`
+5. Set your browser to proxy requests to localhost:6000.
 
-6. Set your browser to proxy requests to localhost:6000.
+6. Use the command `proxy` to see what you can break in hnwProxy.
 
-7. Use the command `proxy` to see what you can break in hnwProxy.
+### Vagrant Commands
 
-8. Rerun provisioning: `vagrant provision`, destroy VM: `vagrant destroy`
+ * Stop VM: `vagrant halt`
+ * Delete VM: `vagrant destroy`
+ * Update VM: `vagrant halt && vagrant up --provision` (fast and works most of the time)
+ * Update VM: `vagrant destroy && vagrant up`
+
+### Example
 ```
 PS D:\git\hnwProxy> vagrant ssh -- -D 6000
 
