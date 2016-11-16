@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# dns-block module
+# blocks specific DNS records
+
+set -e
+
+# comment that identifies this module's iptables rules
+COMMENT="dns-block_module"
+
+declare -A records
+records['A']='|00010001|' # type 1 (0x0001), class IN (0x0001) 
+records['AAAA']='|001c0001|'
+records['CNAME']='|00050001|'
+records['MX']='|000f0001|'
+records['NS']='|00020001|'
+records['PTR']='|000c0001|'
+records['SOA']='|00060001|'
+records['SRV']='|00210001|'
+records['TXT']='|00100001|'
+
+
+
+usage()
+{
+  echo "USAGE"
+  echo "  proxy dns-block <record>"
+  echo "  proxy dns-block disable"
+  echo "  proxy dns-block show"
+  echo "  proxy dns-block list"
+  echo
+  echo "PARAMETERS"
+  echo "  record          Block specific DNS record."
+  echo
+  echo "OPTIONS"
+  echo "  disable         Disable this module."
+  echo "  show            Show status."
+  echo "  list            List record types."
+}
+
+
+case $1 in
+  "")
+    usage
+    ;;
+
+  "disable")
+    iptables-save | grep -v $COMMENT | iptables-restore
+    ip6tables-save | grep -v $COMMENT | ip6tables-restore
+    ;;
+
+  "show")
+    rules=$(iptables-save | grep $COMMENT | cut -d ' ' -f 16)
+    # hex strings from active rules
+    
+    # iterate over keys, i.e record names
+    for i in "${!records[@]}"; do
+      record=${records[$i]}
+      
+      if [[ $rules == *$record* ]]; then
+        echo "Blocking $i lookup."
+      fi
+    done
+    ;;
+
+  "list")
+    echo "DNS records:"
+    echo "  ${!records[@]}"
+    ;;
+
+  *)
+    if [[ ${records[$1]} == ?* ]]; then
+      echo "Blocked $1 lookup."
+      iptables -A OUTPUT -p udp --dport 53 -m comment --comment "$COMMENT" -m string --hex-string "${records[$1]}" --algo bm -j DROP
+      ip6tables -A OUTPUT -p udp  --dport 53 -m comment --comment "$COMMENT" -m string --hex-string "${records[$1]}" --algo bm -j DROP
+
+    else
+      echo "Unknown command"
+
+    fi
+    ;;
+esac
