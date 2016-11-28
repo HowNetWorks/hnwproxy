@@ -37,7 +37,7 @@ Vagrant.configure("2") do |config|
     digitalocean.ipv6 = true
     digitalocean.backups_enabled = false
 
-    digitalocean.vm.provision "shell", path: "scripts/provision_digitalocean.sh"
+    override.vm.provision "shell", path: "scripts/provision_digitalocean.sh"
   end
 
   ##############################
