@@ -1,7 +1,8 @@
 ---
 - name: playbook (all providers)
   hosts: all
-  sudo: true
+  become: true
+  become_user: root
   tasks:
    - name: starting ansible run
      shell: echo $(date) >> /tmp/ansible_run
@@ -17,3 +18,15 @@
 
    - name: iptables base rules
      script: /home/vagrant/guestfiles/firewall_base.sh
+
+   - name: 'pptpd: install'
+     apt: name=pptpd state=present
+
+   - name: 'pptpd: enable ipv4 forwarding'
+     sysctl: name=net.ipv4.ip_forward value=1 sysctl_set=yes
+
+   - name: 'pptpd: configure'
+     script: /home/vagrant/guestfiles/configure_pptpd.sh
+
+   - name: 'pptpd: enable & restart service'
+     service: name=pptpd enabled=true state=restarted

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # provision script that is run on all providers
-# this is run after any provider-specific scripts/options
+
+# This is run before any provider-specific provisioners, despite being later in
+# the Vagrantfile (see https://github.com/mitchellh/vagrant/issues/5641#issuecomment-107104658)
 
 # Exit immediately if some command fails
 set -e

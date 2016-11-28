@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# show pptp vpn info
+
+# NOTE: The pptp vpn server is configured in guestfiles/playbook.yml
+
+set -e
+
+interface=$(cat /var/external_interface)
+addresses=$(ip addr show $interface | grep 'inet ' | cut -d ' ' -f 6 | cut -d '/' -f 1 | tr '\n' '  ')
+username=$(cat /etc/ppp/chap-secrets | cut -d ' ' -f 1)
+password=$(cat /etc/ppp/chap-secrets | cut -d ' ' -f 3)
+
+echo "PPTP VPN"
+echo "  Address:   $addresses"
+echo "  Port:      1723"
+echo "  Username:  $username"
+echo "  Password:  $password"
+
+if [[ "$(cat /var/provider)" == "virtualbox" && "$interface" == "eth0" ]]; then
+  echo "WARNING!"
+  echo "  You are using hnwProxy through virtualbox's NAT interface."
+  echo "  Consider enabling bridged networking in settings.yaml and then reprovisioning"
+  echo "  To reprovision: vagrant halt && vagrant up --provision"
+fi
