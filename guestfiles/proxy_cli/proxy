@@ -3,8 +3,8 @@
 
 set -e
 
-SCRIPTDIR=/usr/local/bin
-MODULEDIR=$SCRIPTDIR/proxy_modules
+SCRIPTDIR='/usr/local/bin'
+MODULEDIR="$SCRIPTDIR/proxy_modules"
 
 usage()
 {
@@ -21,19 +21,20 @@ if [ $# -eq 0 ]
 then
   usage
 else
-  case $1 in
+  module=${1,,} # make lowercase
+  case $module in
     "show")
+      # read description files
       echo
-      cat $MODULEDIR/*/description
+      find $MODULEDIR -mindepth 2 -type f -name description | sort | xargs cat
       ;;
     *)
-      if [ -f $MODULEDIR/$1/$1 ]
-      then
+      if [ -f $MODULEDIR/$module/$module ]; then
         # run module with options
-        sudo $MODULEDIR/$1/$1 $2 $3 $4
+        sudo $MODULEDIR/$module/$module $2 $3 $4
       else
         usage
-        fi
+      fi
       ;;
     esac
 fi
