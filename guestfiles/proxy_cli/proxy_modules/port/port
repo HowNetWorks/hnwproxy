@@ -26,13 +26,85 @@ usage()
   echo "  action                Action to take:"
   echo "                         drop     drop packet"
   echo "                         rst      drop and send TCP RST"
-  echo "                         icmp     drop and send icmp-admin-prohibited" 
+  echo "                         icmp     drop and send icmp-admin-prohibited"
   echo "OPTIONS"
-  echo "  flush                 Flush active rules."
+  echo "  disable               Remove active rules."
   echo "  show                  Show active rules."
 }
 
-case $1 in
+generateRules()
+{
+  ip=$1        # ip version 4, 6, or 4_6
+  protocol=$2  # tcp, udp, or tcp_udp
+  port=$3      # port or port range
+  action=$4    # iptables action
+  ipv4=false
+  ipv6=false
+
+  case $ip in
+    "4")
+      ipv4=true
+      ;;
+    "6")
+      ipv6=true
+      ;;
+    "4_6")
+      ipv4=true
+      ipv6=true
+      ;;
+  esac
+
+  if [[ $port =~ $SINGLE_PORT ]]; then
+    if [[ $protocol == tcp_udp ]]; then
+      if [[ $ipv4 == true ]]; then
+        iptables -A OUTPUT -p tcp --dport $port -m comment --comment "$COMMENT" $action
+        iptables -A OUTPUT -p udp --dport $port -m comment --comment "$COMMENT" $action
+        iptables -A FORWARD -p tcp --dport $port -m comment --comment "$COMMENT" $action
+        iptables -A FORWARD -p udp --dport $port -m comment --comment "$COMMENT" $action
+      fi; if [[ $ipv6 == true ]]; then
+        ip6tables -A OUTPUT -p tcp --dport $port -m comment --comment "$COMMENT" $action
+        ip6tables -A OUTPUT -p udp --dport $port -m comment --comment "$COMMENT" $action
+        ip6tables -A FORWARD -p tcp --dport $port -m comment --comment "$COMMENT" $action
+        ip6tables -A FORWARD -p udp --dport $port -m comment --comment "$COMMENT" $action
+      fi
+    else
+      if [[ $ipv4 == true ]]; then
+        iptables -A OUTPUT -p $protocol --dport $port -m comment --comment "$COMMENT" $action
+        iptables -A FORWARD -p $protocol --dport $port -m comment --comment "$COMMENT" $action
+      fi; if [[ $ipv6 == true ]]; then
+        ip6tables -A OUTPUT -p $protocol --dport $port -m comment --comment "$COMMENT" $action
+        ip6tables -A FORWARD -p $protocol --dport $port -m comment --comment "$COMMENT" $action
+      fi
+    fi
+  elif [[ $port =~ $PORT_RANGE ]]; then
+    if [[ $protocol == tcp_udp ]]; then
+      if [[ $ipv4 == true ]]; then
+        iptables -A OUTPUT -p tcp -m multiport --dports $port -m comment --comment "$COMMENT" $action
+        iptables -A OUTPUT -p udp -m multiport --dports $port -m comment --comment "$COMMENT" $action
+        iptables -A FORWARD -p tcp -m multiport --dports $port -m comment --comment "$COMMENT" $action
+        iptables -A FORWARD -p udp -m multiport --dports $port -m comment --comment "$COMMENT" $action
+      fi; if [[ $ipv6 == true ]]; then
+        ip6tables -A OUTPUT -p tcp -m multiport --dports $port -m comment --comment "$COMMENT" $action
+        ip6tables -A OUTPUT -p udp -m multiport --dports $port -m comment --comment "$COMMENT" $action
+        ip6tables -A FORWARD -p tcp -m multiport --dports $port -m comment --comment "$COMMENT" $action
+        ip6tables -A FORWARD -p udp -m multiport --dports $port -m comment --comment "$COMMENT" $action
+      fi
+    else
+      if [[ $ipv4 == true ]]; then
+        iptables -A OUTPUT -p $protocol -m multiport --dports $port -m comment --comment "$COMMENT" $action
+        iptables -A FORWARD -p $protocol -m multiport --dports $port -m comment --comment "$COMMENT" $action
+      fi; if [[ $ipv6 == true ]]; then
+        ip6tables -A OUTPUT -p $protocol -m multiport --dports $port -m comment --comment "$COMMENT" $action
+        ip6tables -A FORWARD -p $protocol -m multiport --dports $port -m comment --comment "$COMMENT" $action
+      fi
+    fi
+  else
+    echo "Invalid port or port range."
+    exit 1
+  fi
+}
+
+case "$1" in
   "")
     usage
     ;;
@@ -40,73 +112,34 @@ case $1 in
   "show")
     echo "Active rules:"
     echo "  IPv4"
-    iptables-save | grep $COMMENT | cut -d ' ' -f 4,8,14,15,16 | sed -e 's/^/    /'
+    iptables-save | grep -v FORWARD |  grep $COMMENT | cut -d ' ' -f 4,8,14,15,16 | sed -e 's/^/    /'
     echo "  IPv6"
-    ip6tables-save | grep $COMMENT | cut -d ' ' -f 4,8,14,15,16 | sed -e 's/^/    /'
+    ip6tables-save | grep -v FORWARD | grep $COMMENT | cut -d ' ' -f 4,8,14,15,16 | sed -e 's/^/    /'
+    #                        ^ FORWARD and OUTPUT have the same rules, no need to show both
     ;;
 
-  "flush")
+  "flush"|"disable")
     # remove this module's rules
     iptables-save | grep -v $COMMENT | iptables-restore
     ip6tables-save | grep -v $COMMENT | ip6tables-restore
     ;;
 
   *)
+    action=${2,,} # to lowercase
+
     if [[ $# -lt 2 ]]; then
       echo "Invalid option or missing action."
       exit 1
 
-    elif [[ $2 == "drop" ]]; then
-      if [[ $1 =~ $SINGLE_PORT ]]; then
-        # create single port  rule
-        iptables -A OUTPUT -p tcp --dport $1 -m comment --comment "$COMMENT" -j DROP
-        iptables -A OUTPUT -p udp --dport $1 -m comment --comment "$COMMENT" -j DROP
-        ip6tables -A OUTPUT -p tcp --dport $1 -m comment --comment "$COMMENT" -j DROP
-        ip6tables -A OUTPUT -p udp --dport $1 -m comment --comment "$COMMENT" -j DROP
-        
-      elif [[ $1 =~ $PORT_RANGE ]]; then
-        # create port range rule
-        iptables -A OUTPUT -p tcp -m multiport --dports $1 -m comment --comment "$COMMENT" -j DROP
-        iptables -A OUTPUT -p udp -m multiport --dports $1 -m comment --comment "$COMMENT" -j DROP
-        ip6tables -A OUTPUT -p tcp -m multiport --dports $1 -m comment --comment "$COMMENT" -j DROP
-        ip6tables -A OUTPUT -p udp -m multiport --dports $1 -m comment --comment "$COMMENT" -j DROP
+    elif [[ $action == drop ]]; then
+      generateRules '4_6' 'tcp_udp' $1 '-j DROP'
 
-      else
-        echo "Invalid port or port range."
-        exit 1
-      fi
-    
-    elif [[ $2 == "rst" ]]
-    then
-      if [[ $1 =~ $SINGLE_PORT ]]; then
-        iptables -A OUTPUT -p tcp --dport $1 -m comment --comment "$COMMENT" -j REJECT --reject-with tcp-reset
-        ip6tables -A OUTPUT -p tcp --dport $1 -m comment --comment "$COMMENT" -j REJECT --reject-with tcp-reset
-        
-      elif [[ $1 =~ $PORT_RANGE ]]; then
-        iptables -A OUTPUT -p tcp -m multiport --dports $1 -m comment --comment "$COMMENT" -j REJECT --reject-with tcp-reset
-        ip6tables -A OUTPUT -p tcp -m multiport --dports $1 -m comment --comment "$COMMENT" -j REJECT --reject-with tcp-reset
-      else
-        echo "Invalid port or port range."
-        exit 1
-      fi
-    elif [[ $2 == "icmp" ]]
-    then
-      if [[ $1 =~ $SINGLE_PORT ]]; then
-        iptables -A OUTPUT -p tcp --dport $1 -m comment --comment "$COMMENT" -j REJECT --reject-with icmp-admin-prohibited
-        iptables -A OUTPUT -p udp --dport $1 -m comment --comment "$COMMENT" -j REJECT --reject-with icmp-admin-prohibited
-        ip6tables -A OUTPUT -p tcp --dport $1 -m comment --comment "$COMMENT" -j REJECT --reject-with icmp6-adm-prohibited
-        ip6tables -A OUTPUT -p udp --dport $1 -m comment --comment "$COMMENT" -j REJECT --reject-with icmp6-adm-prohibited
-        
-      elif [[ $1 =~ $PORT_RANGE ]]; then
-        iptables -A OUTPUT -p tcp -m multiport --dports $1 -m comment --comment "$COMMENT" -j REJECT --reject-with icmp-admin-prohibited
-        iptables -A OUTPUT -p udp -m multiport --dports $1 -m comment --comment "$COMMENT" -j REJECT --reject-with icmp-admin-prohibited
-        ip6tables -A OUTPUT -p tcp -m multiport --dports $1 -m comment --comment "$COMMENT" -j REJECT --reject-with icmp6-adm-prohibited
-        ip6tables -A OUTPUT -p udp -m multiport --dports $1 -m comment --comment "$COMMENT" -j REJECT --reject-with icmp6-adm-prohibited
+    elif [[ $action == rst ]]; then
+      generateRules '4_6' 'tcp' $1 '-j REJECT --reject-with tcp-reset'
 
-      else
-        echo "Invalid port or port range."
-        exit 1
-      fi
+    elif [[ $action == icmp ]]; then
+      generateRules '4' 'tcp_udp' $1 '-j REJECT --reject-with icmp-admin-prohibited'
+      generateRules '6' 'tcp_udp' $1 '-j REJECT --reject-with icmp6-adm-prohibited'
     fi
     ;;
 esac
