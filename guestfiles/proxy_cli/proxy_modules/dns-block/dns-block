@@ -8,7 +8,7 @@ set -e
 COMMENT="dns-block_module"
 
 declare -A records
-records['A']='|00010001|' # type 1 (0x0001), class IN (0x0001) 
+records['A']='|00010001|' # type 1 (0x0001), class IN (0x0001)
 records['AAAA']='|001c0001|'
 records['CNAME']='|00050001|'
 records['MX']='|000f0001|'
@@ -51,11 +51,11 @@ case $1 in
   "show")
     rules=$(iptables-save | grep $COMMENT | cut -d ' ' -f 16)
     # hex strings from active rules
-    
+
     # iterate over keys, i.e record names
     for i in "${!records[@]}"; do
       record=${records[$i]}
-      
+
       if [[ $rules == *$record* ]]; then
         echo "Blocking $i lookup."
       fi
@@ -72,6 +72,8 @@ case $1 in
       echo "Blocked $1 lookup."
       iptables -A OUTPUT -p udp --dport 53 -m comment --comment "$COMMENT" -m string --hex-string "${records[$1]}" --algo bm -j DROP
       ip6tables -A OUTPUT -p udp  --dport 53 -m comment --comment "$COMMENT" -m string --hex-string "${records[$1]}" --algo bm -j DROP
+      iptables -A FORWARD -p udp --dport 53 -m comment --comment "$COMMENT" -m string --hex-string "${records[$1]}" --algo bm -j DROP
+      ip6tables -A FORWARD -p udp  --dport 53 -m comment --comment "$COMMENT" -m string --hex-string "${records[$1]}" --algo bm -j DROP
 
     else
       echo "Unknown command"
