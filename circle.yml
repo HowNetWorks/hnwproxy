@@ -1,14 +1,14 @@
 dependencies:
   override:
-    - "sudo apt-add-repository 'deb http://archive.ubuntu.com/ubuntu trusty-backports main restricted universe'"
-    - "sudo apt-get update"
-    - "sudo apt-get install shellcheck"
+    - sudo apt-add-repository 'deb http://archive.ubuntu.com/ubuntu trusty-backports main restricted universe'
+    - sudo apt-get update
+    - sudo apt-get install shellcheck
 
 test:
   override:
     # provision scripts
-    - "shellcheck ./scripts/*.sh"
-    - "shellcheck ./guestfiles/*.sh"
+    - shellcheck ./scripts/*.sh
+    - shellcheck ./guestfiles/*.sh
 
     # proxy cli scripts
-    - "find ./guestfiles/proxy_cli -type f -exec grep -l '^#!/usr/bin/env bash$' {} \; ! -name "*.*" | xargs shellcheck"
+    - find ./guestfiles/proxy_cli -type f -exec grep -l '^#!/usr/bin/env bash$' {} \; ! -name "*.*" | xargs shellcheck
