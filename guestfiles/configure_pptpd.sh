@@ -1,19 +1,20 @@
 #!/usr/bin/env bash
 # script to configure pptpd
 
-file='/etc/pptpd.conf'
-echo 'option /etc/ppp/pptpd-options' > $file
-echo 'logwtmp' >> $file
-# randomly chosen subnet
-echo 'localip 172.20.0.1' >> $file
-echo 'remoteip 172.20.0.100-200' >> $file
+{
+  echo 'option /etc/ppp/pptpd-options'
+  echo 'logwtmp'
+  # randomly chosen subnet
+  echo 'localip 172.20.0.1'
+  echo 'remoteip 172.20.0.100-200'
+} > /etc/pptpd.conf
 
 # set dns servers
 sed -i 's/^#ms-dns 10.0.0.1$/ms-dns 8.8.8.8/g' /etc/ppp/pptpd-options
 sed -i 's/^#ms-dns 10.0.0.2$/ms-dns 8.8.4.4/g' /etc/ppp/pptpd-options
 
 # configure users
-echo "vagrant * $(cat /dev/urandom | tr -cd 'a-zA-Z0-9' | head -c 14) *" > /etc/ppp/chap-secrets
+echo "vagrant * $(tr -cd 'a-zA-Z0-9' < /dev/urandom | head -c 14) *" > /etc/ppp/chap-secrets
 
 # iptables rules
 iptables -A OUTPUT -p tcp --sport 1723 -j ACCEPT
