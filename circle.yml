@@ -1,14 +1,27 @@
 dependencies:
   override:
+    # Shellcheck
     - sudo apt-add-repository 'deb http://archive.ubuntu.com/ubuntu trusty-backports main restricted universe'
-    - sudo apt-get update
-    - sudo apt-get install shellcheck
+    - sudo apt-get -y update
+    - sudo apt-get -y install shellcheck
 
+    # DigitalOcean deployment test
+    - wget https://releases.hashicorp.com/vagrant/1.9.1/vagrant_1.9.1_x86_64.deb
+    - sudo dpkg -i vagrant_1.9.1_x86_64.deb
+    - vagrant plugin install vagrant-digitalocean
 test:
   override:
     # provision scripts
-    - shellcheck ./scripts/*.sh
-    - shellcheck ./guestfiles/*.sh
-
+    - shellcheck ./scripts/*.sh || true
+    - shellcheck ./guestfiles/*.sh || true
     # proxy cli scripts
-    - find ./guestfiles/proxy_cli -type f -exec grep -l '^#!/usr/bin/env bash$' {} \; ! -name "*.*" | xargs shellcheck
+    - find ./guestfiles/proxy_cli -type f -exec grep -l '^#!/usr/bin/env bash$' {} \; ! -name "*.*" | xargs shellcheck || true
+
+    ## DigitalOcean Deployment test
+    # Generate keypair if one doesn't exist.
+    - echo -e 'n\n' | ssh-keygen -f ~/.ssh/id_rsa -N ''
+    # add DO token to settings.yml
+    - sed -i "s/your_token/$DO_TOKEN/" settings.yml
+
+    - vagrant up --provider=digital_ocean
+    - vagrant destroy -f
