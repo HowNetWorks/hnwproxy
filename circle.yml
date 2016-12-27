@@ -33,15 +33,13 @@ test:
     # Add DO token for vagrant to use
     - sed -i "s/your_token/$DO_TOKEN/" settings.yml
 
-    # Generate unique keyname so that vagrant is guaranteed to add it as
-    # a new key to DO.
-    - random_key_name="circle_$(date | md5sum | head -c 10)"
-    - sed -i "s/vagrant_do_key/$random_key_name/" Vagrantfile
+    # Set ssh_key_name to empty so vagrant uses the value in id_rsa e.g. user@box1
+    - sed -i "s/vagrant_do_key//" Vagrantfile
 
     - vagrant up --provider=digital_ocean
     - vagrant destroy -f
 
     # Remove our temporary key from DO.
     # doctl will read our DO token from ~/.config/doctl/config.yaml
-    - key_id=$(doctl compute ssh-key list | grep "$random_key_name" | cut -f 1)
+    - key_id=$(ssh-keygen -lf ~/.ssh/id_rsa | cut -f 2 -d ' ')
     - doctl compute ssh-key delete $key_id
