@@ -36,6 +36,7 @@ Vagrant.configure("2") do |config|
     digitalocean.size = '1gb'
     digitalocean.ipv6 = true
     digitalocean.backups_enabled = false
+    digitalocean.ssh_key_name = 'vagrant_do_key'
 
     override.vm.provision "shell", path: "scripts/provision_digitalocean.sh"
   end

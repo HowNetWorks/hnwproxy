@@ -5,10 +5,18 @@ dependencies:
     - sudo apt-get -y update
     - sudo apt-get -y install shellcheck
 
-    # DigitalOcean deployment test
+    # Vagrant & vagrant-digitalocean plugin
     - wget https://releases.hashicorp.com/vagrant/1.9.1/vagrant_1.9.1_x86_64.deb
     - sudo dpkg -i vagrant_1.9.1_x86_64.deb
     - vagrant plugin install vagrant-digitalocean
+
+    # DigitalOcean cli
+    - wget https://github.com/digitalocean/doctl/releases/download/v1.5.0/doctl-1.5.0-linux-amd64.tar.gz
+    - tar -xf doctl-1.5.0-linux-amd64.tar.gz
+    - sudo mv doctl /usr/local/bin
+    # configure DO token
+    - echo "access-token: $DO_TOKEN" > config.yaml
+    - install -D -m 0600 config.yaml ~/.config/doctl/config.yaml
 test:
   override:
     # provision scripts
@@ -20,8 +28,19 @@ test:
     ## DigitalOcean Deployment test
     # Generate keypair if one doesn't exist.
     - echo -e 'n\n' | ssh-keygen -f ~/.ssh/id_rsa -N ''
-    # add DO token to settings.yml
+
+    # Add DO token for vagrant to use
     - sed -i "s/your_token/$DO_TOKEN/" settings.yml
+
+    # Generate unique keyname so that vagrant is guaranteed to add it as
+    # a new key to DO.
+    - random_key_name="circle_$(date | md5sum | head -c 10)"
+    - sed -i "s/vagrant_do_key/$random_key_name/" Vagrantfile
 
     - vagrant up --provider=digital_ocean
     - vagrant destroy -f
+
+    # Remove our temporary key from DO.
+    # doctl will read our DO token from ~/.config/doctl/config.yaml
+    - key_id=$(doctl compute ssh-key list | grep "$random_key_name" | cut -f 1)
+    - doctl compute ssh-key delete $key_id
