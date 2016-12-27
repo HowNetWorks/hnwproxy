@@ -15,7 +15,8 @@ dependencies:
     - tar -xf doctl-1.5.0-linux-amd64.tar.gz
     - sudo mv doctl /usr/local/bin
     # configure DO token
-    - echo "access-token: $DO_TOKEN" > config.yaml
+    - |
+      echo "access-token: $DO_TOKEN" > config.yaml
     - install -D -m 0600 config.yaml ~/.config/doctl/config.yaml
 test:
   override:
