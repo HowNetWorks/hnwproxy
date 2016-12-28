@@ -41,5 +41,4 @@ test:
 
     # Remove our temporary key from DO.
     # doctl will read our DO token from ~/.config/doctl/config.yaml
-    - key_id=$(ssh-keygen -lf ~/.ssh/id_rsa | cut -f 2 -d ' ')
-    - doctl compute ssh-key delete $key_id
+    - doctl compute ssh-key delete $(ssh-keygen -lf ~/.ssh/id_rsa | cut -f 2 -d ' ')
