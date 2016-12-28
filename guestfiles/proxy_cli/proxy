@@ -26,12 +26,13 @@ else
     "show")
       # read description files
       echo
-      find $MODULEDIR -mindepth 2 -type f -name description | sort | xargs cat
+      find "$MODULEDIR" -mindepth 2 -type f -name description | sort | xargs cat
       ;;
     *)
-      if [ -f $MODULEDIR/$module/$module ]; then
+      if [[ -f $MODULEDIR/$module/$module ]]; then
         # run module with options
-        sudo $MODULEDIR/$module/$module $2 $3 $4
+        shift # discard first parameter
+        sudo "$MODULEDIR/$module/$module" "$@"
       else
         usage
       fi
