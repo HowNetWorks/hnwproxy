@@ -1,3 +1,4 @@
+---
 dependencies:
   override:
     # Shellcheck
@@ -9,6 +10,9 @@ dependencies:
     - wget https://releases.hashicorp.com/vagrant/1.9.1/vagrant_1.9.1_x86_64.deb
     - sudo dpkg -i vagrant_1.9.1_x86_64.deb
     - vagrant plugin install vagrant-digitalocean
+
+    # https://github.com/adrienverge/yamllint
+    - sudo pip install yamllint
 
     # DigitalOcean cli
     - wget https://github.com/digitalocean/doctl/releases/download/v1.5.0/doctl-1.5.0-linux-amd64.tar.gz
@@ -23,8 +27,12 @@ test:
     # provision scripts
     - shellcheck ./scripts/*.sh || true
     - shellcheck ./guestfiles/*.sh || true
+
     # proxy cli scripts
     - find ./guestfiles/proxy_cli -type f -exec grep -l '^#!/usr/bin/env bash$' {} \; ! -name "*.*" | xargs shellcheck || true
+
+    # YAML files
+    - find . -type f \( -name "*.yml" -or -name "*.yaml" \) -exec yamllint {} \; || true
 
     ## DigitalOcean Deployment test
     # Generate keypair if one doesn't exist.
