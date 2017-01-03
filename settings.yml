@@ -1,6 +1,7 @@
+---
 DO:
   # DigitalOcean settings
-  
+
   # view regions with "vagrant digitalocean-list regions $DO_TOKEN"
   # Frankfurt 1
   region: 'fra1'
@@ -8,7 +9,7 @@ DO:
   # https://github.com/devopsgroup-io/vagrant-digitalocean#configure
   token: 'your_token'
   keypath: '~/.ssh/id_rsa'
-  
+
 # Enable virtualbox bridged network.
 #  By default, virtualbox connects through the host using NAT.
 #  A bridged network is required for some modules, but is not the default
