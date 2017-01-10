@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# protocol-block module
+
+set -e
+
+# comment that identifies this module's iptables rules
+COMMENT="protocol-block_module"
+
+usage()
+{
+  echo "USAGE"
+  echo "  proxy protocol-block <proto>"
+  echo "  proxy protocol-block disable"
+  echo "  proxy protocol-block show"
+  echo "  proxy protocol-block list"
+  echo
+  echo "OPTIONS"
+  echo "  proto           Block this protocol, name or number. "
+  echo "  disable         Disable module."
+  echo "  show            Show what is being blocked."
+  echo "  list            List available protocols."
+}
+
+argument=${1,,} # to lowercase
+
+case $argument in
+  "")
+    usage
+    ;;
+
+  "disable")
+    iptables-save | grep -v "$COMMENT" | iptables-restore
+    ip6tables-save | grep -v "$COMMENT" | ip6tables-restore
+    ;;
+
+  "show")
+    echo "Blocking these protocols"
+    echo "IPv4:"
+    if [[ $(iptables-save | grep "$COMMENT") == "" ]]; then
+      echo "  none"
+    else
+      iptables-save | grep -v FORWARD |  grep $COMMENT | cut -d ' ' -f 4 | sed -e 's/^/  /'
+    fi              # ^ FORWARD and OUTPUT have the same rules, no need to show both
+    echo "IPv6:"
+    if [[ $(ip6tables-save | grep "$COMMENT") == "" ]]; then
+      echo "  none"
+    else
+      ip6tables-save | grep -v FORWARD | grep $COMMENT | cut -d ' ' -f 4 | sed -e 's/^/  /'
+    fi
+    ;;
+
+  "list")
+    echo "Protocols:"
+    echo " all, tcp, udp, udplite, icmp, esp, ah, sctp"
+    echo
+    echo "Protocols from /etc/protocol are also available."
+    ;;
+
+  *)
+    iptables -A OUTPUT -p "$argument" -m owner --uid-owner vagrant -m comment --comment "$COMMENT" -j DROP
+    iptables -A FORWARD  -p "$argument" -m comment --comment "$COMMENT" -j DROP
+    ip6tables -A OUTPUT  -p "$argument" -m owner --uid-owner vagrant -m comment --comment "$COMMENT" -j DROP
+    ip6tables -A FORWARD  -p "$argument" -m comment --comment "$COMMENT" -j DROP
+    ;;
+esac
