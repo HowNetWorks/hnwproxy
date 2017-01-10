@@ -1,3 +1,4 @@
  port - Filters traffic by outgoing destination port.
- Run without arguments for usage.
-
+ Run with no parameters for usage.
+ 
+ 
