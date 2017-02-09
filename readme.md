@@ -1,7 +1,7 @@
 ﻿# hnwProxy
 [![CircleCI](https://circleci.com/gh/HowNetWorks/hnwproxy.svg?style=shield)](https://circleci.com/gh/HowNetWorks/hnwproxy)
 
-hnwProxy is a proxy server you can use to simulate a broken Internet connection. It is being developed as a tool to help HowNetWorks' development.
+hnwProxy is a proxy server you can use to simulate a broken Internet connection. It was developed as a [bachelor's thesis](thesis.pdf) by Eemil Aikio.
 
 ## Features
 hnwProxy uses a simple module system to run scripts that break things. The command `proxy show` will list available modules, all of these can be called without arguments for usage information. (more info about modules under guestfiles/proxy_cli)  
